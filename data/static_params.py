@@ -1,0 +1,15 @@
+CC = 6000
+COEL = 300
+COER = 500
+CEL = 50
+CER = 40
+CRER = 20
+CREL = 10
+CCD = 2000
+J = 10
+DL = 2
+DR = 3
+DLMAX = 4
+DRMAX = 6
+M = 90000000000
+h_special = 6
