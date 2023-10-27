@@ -1,9 +1,28 @@
+from gurobipy import Model, GRB, quicksum
+from functions.constraints import create_restrictions_dict
+from data.sets import *
 from data.static_params import *
 from data.dinamic_params import *
-from data.sets import *
-from gurobipy import quicksum
+from functions.objective_function import create_objective
 
-def create_restrictions_dict(x_crh, y_clh, u_lh, v_rh, ex_c):
+restriction_list = ['r1.1', 'r1.2', 'r2', 'r3.1', 'r3.2', 'r4', 'r5.1', 'r5.2', 'r7.1', 'r7.2']
+
+def run_model():
+	# Create model
+	model = Model("Transicion a camiones eléctricos")
+
+	# Create binary variables
+	y_clh = model.addVars(Camiones, EstacionesLenta, Horas, vtype = GRB.BINARY, name = "y_clh")
+	x_crh = model.addVars(Camiones, EstacionesRapida, Horas, vtype = GRB.BINARY, name = "x_crh")
+	u_lh = model.addVars(EstacionesLenta, Horas, vtype = GRB.BINARY, name = "u_lh")
+	v_rh = model.addVars(EstacionesRapida, Horas, vtype = GRB.BINARY, name = "v_rh")
+
+	# Create integer variables
+	ex_c = model.addVars(Camiones, vtype = GRB.INTEGER, name = "ex_c")
+
+	# Add variables to model
+	model.update()
+
 	# R1: La cantidad de camiones en cada estaci ́on de carga a una hora determinada no puede superar su capacidad maxima
 	# R1.1: Estacion lenta
 	r1_1 = (quicksum(y_clh[c, l, h] for c in Camiones) <= CTL_l[l] for l in EstacionesLenta for h in Horas)
@@ -43,6 +62,20 @@ def create_restrictions_dict(x_crh, y_clh, u_lh, v_rh, ex_c):
 	# R7.2: Estacion rapida
 	r7_2 = (quicksum(x_crh[c, r, h] * DR for h in Horas) <= DRMAX * M * v_rh[r, h] 
 					for c in Camiones for r in EstacionesRapida for h in Horas)
-	
-	return {'r1.1': r1_1, 'r1.2': r1_2, 'r2': r2, 'r3.1': r3_1, 'r3.2': r3_2, 'r4': r4, 
-				 'r5.1': r5_1, 'r5.2': r5_2, 'r6': r6, 'r7.1': r7_1, 'r7.2': r7_2}
+
+	r_mine = {'r1.1': r1_1, 'r1.2': r1_2, 'r2': r2, 'r3.1': r3_1, 'r3.2': r3_2, 'r4': r4, 
+					'r5.1': r5_1, 'r5.2': r5_2, 'r6': r6, 'r7.1': r7_1, 'r7.2': r7_2}
+
+	# Create restrictions
+	r = create_restrictions_dict(y_clh, x_crh, u_lh, v_rh, ex_c)
+	for i in restriction_list:
+		model.addConstrs(r_mine[i], name = i)
+
+	# Create & add objective function
+	objective = create_objective(x_crh, y_clh, u_lh, v_rh, ex_c)
+	model.setObjective(objective, GRB.MINIMIZE)
+
+	# Optimize
+	model.optimize()
+	return model
+
