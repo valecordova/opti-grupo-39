@@ -6,12 +6,12 @@ from dinamic_params import *
 from objective_function import create_objective
 
 # for c in range(1, 3):
-# 	for h in range(1, 24):
-# 		print(HR_c[c] >= quicksum(1 for j in range(h, HF_ci[c, h])))
+# 	for h in range(1, (25 - HR_c[c])):
+# 		print(h + HR_c[c])
 
 
-restriction_list = ['r1.1', 'r1.2', 'r2', 'r3.1', 'r3.2', 'r4', 'r6', 'r7.1', 'r7.2', 'r8', 'r9', 'r5.1', 'r5.2', 'r10', 'r11.1', 'r11.2']
-#restriction_list = ['r8', 'r10', 'r9']
+restriction_list = ['r1.1', 'r1.2', 'r2', 'r3.1', 'r3.2', 'r4', 'r6', 'r7.1', 'r7.2', 'r8', 'r9', 'r5.1', 'r5.2', 'r10', 'r11']
+# #restriction_list = ['r8', 'r10', 'r9']
 
 Camiones = range(1, 3)
 
@@ -68,21 +68,19 @@ def run_model():
 					for c in Camiones for r in EstacionesRapida for h in Horas)
 	
 	# R8 Si empieza debe terminar el viaje y no está disponible
-	r8 = (t_ch[c, h] * HR_c[c] == quicksum(d_ch[c, h] for h in range(h, HF_ci[c, h]))
+	r8 = (t_ch[c, h] * HR_c[c] == quicksum(d_ch[c, j] for j in range(h, (h + HR_c[c])))
 					for h in range(1, (25 - HR_c[c])) for c in Camiones)
 	# R9 Obligar a que realice minimamente una vuelta
-	r9 = (quicksum(t_ch[c, h] for h in range(1, 24)) == 1 for c in Camiones)
+	r9 = (quicksum(t_ch[c, h] for h in Horas) == 1 for c in Camiones)
 
 	r10 = (quicksum(d_ch[c, h] for h in Horas) == HR_c[c] for c in Camiones)
 
-	r11_1 = (quicksum(t_ch[c, h] for h in range(25 - HR_c[c], 25)) == 0 for c in Camiones)
-
-	r11_2 = (t_ch[c, h] == 0 for h in range(25 - HR_c[c], 25) for c in Camiones)
+	r11 = (quicksum(t_ch[c, h] for h in range(25 - HR_c[c], 25)) == 0 for c in Camiones)
 
 
 	r_mine = {'r1.1': r1_1, 'r1.2': r1_2, 'r2': r2, 'r3.1': r3_1, 'r3.2': r3_2, 'r4': r4, 
 					 'r6': r6, 'r7.1': r7_1, 'r7.2': r7_2, 'r5.1': r5_1, 'r5.2': r5_2, 'r8': r8,
-					 'r9': r9, 'r10': r10, 'r11.1': r11_1, 'r11.2': r11_2}
+						'r9': r9, 'r10': r10, 'r11': r11}
 
 	# Create restrictions
 	r = create_restrictions_dict(y_clh, x_crh, u_lh, v_rh, ex_c)
