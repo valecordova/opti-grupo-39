@@ -1,1 +1,1 @@
-{ "SolutionInfo": { "Status": 2, "Runtime": 0.00562596321105957, "Work": 0.000926429, "ObjVal": 480000, "ObjBound": 480000, "ObjBoundC": 480000, "MIPGap": 0, "IntVio": 0, "BoundVio": 0, "ConstrVio": 0, "IterCount": 0, "BarIterCount": 0, "NodeCount": 0, "SolCount": 1, "PoolObjBound": 480000, "PoolObjVal": [ 480000]}, "Vars": [ { "VarName": "ex_c[3]", "X": 1}]}
+{ "SolutionInfo": { "Status": 3, "Runtime": 3.4279823303222656e-03, "Work": 0.002435012, "ObjBound": 1e+100, "ObjBoundC": 1e+100, "MIPGap": 1e+100, "IterCount": 0, "BarIterCount": 0, "NodeCount": 0, "SolCount": 0}}

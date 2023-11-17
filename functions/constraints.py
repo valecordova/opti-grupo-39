@@ -1,6 +1,6 @@
-from data.static_params import *
-from data.dinamic_params import *
-from data.sets import *
+from static_params import *
+from dinamic_params import *
+from sets import *
 from gurobipy import quicksum
 
 def create_restrictions_dict(x_crh, y_clh, u_lh, v_rh, ex_c):
