@@ -1,0 +1,7 @@
+Id;Nombre;gasto_por_hora (kW/h);tipo_de_carga;velocidad_carga_rapida (kW/hr);velocidad_carga_lenta  (kW/h);capacidad_max_bateria (kWh);capacidad_carga_ton;autonomia_sin_carga (km);autonomia_con_carga;velocidad_promedio (km/h);
+1;Foton eAumark S;19.5;AC / DC;54;10.125;81;3.575;250;200;50;
+2;JAC N75;12.28;AC / DC;71;9;107;6.190;;178;40;
+3;MAxus et-916;21.6;DC;130;0;162.28;4.765;;430;40;
+4;Maxus et-516;20.28;DC;65;0;81.14;2;;240;60;
+5;Maxus eDeliver 9;17.85;AC / DC;69;7.35;51.5;1.2;;186;50;
+6;JAC N55;22.32;AC / DC;48;8;96.77;2.15;180;200;60;
