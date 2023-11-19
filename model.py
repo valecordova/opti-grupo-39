@@ -7,13 +7,15 @@ from objective_function import create_objective
 
 # for c in range(1, 3):
 # 	for h in range(1, (25 - HR_c[c])):
-# 		print(h + HR_c[c])
+# 		sum = 0
+# 		for j in range(h, h + HR_c[c]):
+# 			sum +=1
+# 		print(quicksum(1 for j in range(h, (h + HR_c[c]))), ' == ', sum)
 
 
-restriction_list = ['r1.1', 'r1.2', 'r2', 'r3.1', 'r3.2', 'r4', 'r6', 'r7.1', 'r7.2', 'r8', 'r9', 'r5.1', 'r5.2', 'r10', 'r11']
-# #restriction_list = ['r8', 'r10', 'r9']
+restriction_list = ['r1.1', 'r1.2', 'r2', 'r4', 'r5.1', 'r5.2', 'r6', 'r8', 'r9', 'r10', 'r11']
+# restriction_list = ['r8', 'r10', 'r9', 'r11']
 
-Camiones = range(1, 3)
 
 def run_model():
 	# # Create model
@@ -29,6 +31,7 @@ def run_model():
 
 	# Create integer variables
 	ex_c = model.addVars(Camiones, vtype = GRB.INTEGER, name = "ex_c")
+	h_ch = model.addVars(Camiones, Horas, vtype = GRB.INTEGER, name = "h_c")
 
 	# Add variables to model
 	model.update()
@@ -68,19 +71,21 @@ def run_model():
 					for c in Camiones for r in EstacionesRapida for h in Horas)
 	
 	# R8 Si empieza debe terminar el viaje y no está disponible
-	r8 = (t_ch[c, h] * HR_c[c] == quicksum(d_ch[c, j] for j in range(h, (h + HR_c[c])))
-					for h in range(1, (25 - HR_c[c])) for c in Camiones)
+	r8 = (t_ch[c, h] * HR_c[c] <= quicksum(d_ch[c, j] for j in range(h, h + HR_c[c]))
+					 for c in Camiones for h in range(1, 25 - HR_c[c]))
 	# R9 Obligar a que realice minimamente una vuelta
 	r9 = (quicksum(t_ch[c, h] for h in Horas) == 1 for c in Camiones)
 
-	r10 = (quicksum(d_ch[c, h] for h in Horas) == HR_c[c] for c in Camiones)
+	r10 = (quicksum(d_ch[c, h] for h in Horas) - HR_c[c] == 0 for c in Camiones)
 
 	r11 = (quicksum(t_ch[c, h] for h in range(25 - HR_c[c], 25)) == 0 for c in Camiones)
+
+	r12 = (t_ch[c, h] * HR_c[c] <= h_ch[c, h] for h in Horas for c in Camiones)
 
 
 	r_mine = {'r1.1': r1_1, 'r1.2': r1_2, 'r2': r2, 'r3.1': r3_1, 'r3.2': r3_2, 'r4': r4, 
 					 'r6': r6, 'r7.1': r7_1, 'r7.2': r7_2, 'r5.1': r5_1, 'r5.2': r5_2, 'r8': r8,
-						'r9': r9, 'r10': r10, 'r11': r11}
+						'r9': r9, 'r10': r10, 'r11': r11, 'r12': r12}
 
 	# Create restrictions
 	r = create_restrictions_dict(y_clh, x_crh, u_lh, v_rh, ex_c)
@@ -89,7 +94,7 @@ def run_model():
 
 	# Create & add objective function
 	objective = quicksum((y_clh[c, l, h] * (COEL + CCD + CEL) + x_crh[c, r, h] * (COER + CCD + CER) 
-								+ v_rh[r, h] * CRER + u_lh[l, h] * CREL + ex_c[c] * CE) for l in EstacionesLenta 
+								+ ex_c[c] * CE) for l in EstacionesLenta 
 								for r in EstacionesRapida for c in Camiones for h in Horas)
 	model.setObjective(objective, GRB.MINIMIZE)
 
