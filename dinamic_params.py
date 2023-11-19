@@ -11,15 +11,10 @@ def create_dict(fileName):
 	return df
 
 G_c = create_dict('gc')
+B_c = create_dict('bc')
+BI_c = create_dict('bi')
 HR_c =  create_dict('hr')
-VCR_cr = create_dict('vcr')
-VCL_cl = create_dict('vcl')
+VCR_c = create_dict('vcr')
+VCL_c = create_dict('vcl')
 CTL_l = create_dict('ctl')
 CTR_r = create_dict('ctr')
-HF_ci = {}
-for c in Camiones:
-	for i in range(1, 24):
-		if i + HR_c[c] <= 24:
-			HF_ci[c, i] = i + HR_c[c]
-		else:
-			HF_ci[c, i] = i + 1

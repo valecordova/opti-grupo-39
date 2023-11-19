@@ -12,6 +12,8 @@ def write_results(m):
 
 def main():
 	m = run_model()
+	m.reset()
+	m.optimize()
 	write_results(m)
 	if m.status == GRB.INFEASIBLE:
 		m.computeIIS()
