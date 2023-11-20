@@ -6,11 +6,11 @@ from dinamic_params import *
 from objective_function import create_objective
 
 # for c in range(1, 3):
-# 	for h in range(1, (25 - HR_c[c])):
+# 	for h in range(1, (25 - HR_c[c] * 6)):
 # 		sum = 0
-# 		for j in range(h, h + HR_c[c]):
+# 		for j in range(h, h + HR_c[c] * 6):
 # 			sum +=1
-# 		print(quicksum(1 for j in range(h, (h + HR_c[c]))), ' == ', sum)
+# 		print(quicksum(1 for j in range(h, (h + HR_c[c] * 6))), ' == ', sum)
 
 
 restriction_list = ['r1.1', 'r1.2', 'r2', 'r4', 'r5.1', 'r5.2', 'r8', 'r9', 'r10', 'r11','r12.3','r13', 'r12.2']
@@ -55,7 +55,7 @@ def run_model():
 	# R4: Si la cantidad de horas de viaje y carga supera la jornada laboral diaria del conductor se le debe pagar extra
 	r4 = (ex_c[c] ==  quicksum((quicksum(y_clh[c, l, h] for l in EstacionesLenta) + 
 									quicksum(x_crh[c, r, h] for r in EstacionesRapida)) for h in Horas) + 
-									HR_c[c] - J for c in Camiones)
+									HR_c[c] * 6 - J for c in Camiones)
 
 	r5_1 = (quicksum(y_clh[c, l, h] for l in EstacionesLenta) <= 1 - d_ch[c, h] for h in Horas for c in Camiones)
 	r5_2 = (quicksum(x_crh[c, r, h] for r in EstacionesRapida) <= 1 - d_ch[c, h] for h in Horas for c in Camiones)
@@ -69,22 +69,22 @@ def run_model():
 					for c in Camiones for r in EstacionesRapida for h in Horas)
 
 	# R8 Si empieza debe terminar el viaje y no está disponible
-	r8 = (t_ch[c, h] * HR_c[c] <= quicksum(d_ch[c, j] for j in range(h, h + HR_c[c]))
-						for c in Camiones for h in range(1, 25 - HR_c[c]))
+	r8 = (t_ch[c, h] * HR_c[c] * 6 <= quicksum(d_ch[c, j] for j in range(h, h + HR_c[c] * 6))
+						for c in Camiones for h in range(1, 145 - HR_c[c] * 6))
 	# R9 Obligar a que realice minimamente una vuelta
 	r9 = (quicksum(t_ch[c, h] for h in Horas) == 1 for c in Camiones)
 
-	r10 = (quicksum(d_ch[c, h] for h in Horas) - HR_c[c] == 0 for c in Camiones)
+	r10 = (quicksum(d_ch[c, h] for h in Horas) - HR_c[c] * 6 == 0 for c in Camiones)
 
-	r11 = (quicksum(t_ch[c, h] for h in range(25 - HR_c[c], 25)) == 0 for c in Camiones)
+	r11 = (quicksum(t_ch[c, h] for h in range(145 - HR_c[c] * 6, 145)) == 0 for c in Camiones)
 
-	r12 = (h_ch[c, h] == (quicksum(quicksum(y_clh[c, l, h] * VCL_c[c] + x_crh[c, r, h] * VCR_c[c] for l in EstacionesLenta for r in EstacionesRapida) - G_c[c] * d_ch[c, h] for h in range(1, h)) / B_c[c]) for h in range(2, 24) for c in Camiones)
+	r12 = (h_ch[c, h] == (quicksum(quicksum(y_clh[c, l, h] * (VCL_c[c] / 6) + x_crh[c, r, h] * (VCR_c[c] / 6) for l in EstacionesLenta for r in EstacionesRapida) - (G_c[c] / 6)* d_ch[c, h] for h in range(1, h)) / B_c[c]) for h in range(2, 24) for c in Camiones)
 
 	r12_2 = (h_ch[c, h] <= B_c[c] for c in Camiones for h in Horas)
 
-	r12_3 = (h_ch[c, 24] >= 50 for c in Camiones)
+	r12_3 = (h_ch[c, 144] >= 50 for c in Camiones)
 
-	r13 = (h_ch[c, h] >= t_ch[c, h] * HR_c[c] for c in Camiones for h in Horas)
+	r13 = (h_ch[c, h] >= t_ch[c, h] * HR_c[c] * 6 for c in Camiones for h in Horas)
 
 	r14 = ()
 
@@ -98,7 +98,7 @@ def run_model():
 		model.addConstrs(r_mine[i], name = i)
 
 	# Create & add objective function
-	objective = quicksum((y_clh[c, l, h] * (CO * VCL_c[c] + CEL) + x_crh[c, r, h] * (CO * VCR_c[c] + CER) 
+	objective = quicksum((y_clh[c, l, h] * (CO * (VCL_c[c] / 6) + CEL) + x_crh[c, r, h] * (CO * (VCR_c[c] / 6) + CER) 
                                 + ex_c[c] * CE + d_ch[c, h]* CC) for l in EstacionesLenta 
                                 for r in EstacionesRapida for c in Camiones for h in Horas)
 	model.setObjective(objective, GRB.MINIMIZE)
