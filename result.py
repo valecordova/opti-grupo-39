@@ -72,7 +72,7 @@ def get_start(hour):
 
 def create_gantt(df_viaje, df_lenta, df_rapida):
 	frames = []
-	colors = {'Viajando': 'rgb(238, 96, 85)', 'Lenta': 'rgb(96, 211, 148)', 'Rapida': 'rgb(96, 211, 148)'}
+	colors = {'Viajando': 'rgb(238, 96, 85)', 'Lenta': 'rgb(96, 211, 148)', 'Rapida': 'rgb(255, 217, 125)'}
 	if df_viaje is not None:
 		df_viaje['Start'] =  df_viaje['Hora'].apply(get_start)
 		df_viaje['Finish'] = df_viaje['Hora']
@@ -95,6 +95,7 @@ def create_gantt(df_viaje, df_lenta, df_rapida):
 		df_rapida['Task'] = df_rapida['Camion']
 		df_rapida['Resource'] = "Rapida"
 		df_rapida = df_rapida[['Task', 'Start', 'Finish', 'Resource']]
+		frames.append(df_rapida)
 
 	df_total = pd.concat(frames)
 
@@ -105,7 +106,6 @@ def create_gantt(df_viaje, df_lenta, df_rapida):
 
 
 def create_network_graph(df_lenta):
-	print(df_lenta)
 	df_lenta['Estacion'] = df_lenta.apply(lambda x: f"EL {x['Estacion']}", axis = 1)
 	df_lenta['Camion'] = df_lenta.apply(lambda x: str(x['Camion']), axis = 1)
 	df_lenta['Edge'] = df_lenta.apply(lambda x: (x['Camion'], x['Estacion']), axis = 1)

@@ -13,10 +13,10 @@ from objective_function import create_objective
 # 		print(quicksum(1 for j in range(h, (h + HR_c[c]))), ' == ', sum)
 
 
-restriction_list = ['r1.1', 'r1.2', 'r2', 'r4', 'r5.1', 'r5.2', 'r8', 'r9', 'r10', 'r11','r12.3','r13']
+restriction_list = ['r1.1', 'r1.2', 'r2', 'r4', 'r5.1', 'r5.2', 'r8', 'r9', 'r10', 'r11','r12.3','r13', 'r12.2']
 # restriction_list = ['r8', 'r10', 'r9', 'r11']
 
-Camiones = range(1, 60)
+Camiones = range(1, 72)
 
 def run_model():
 	# # Create model
@@ -80,15 +80,17 @@ def run_model():
 
 	r12 = (h_ch[c, h] == (quicksum(quicksum(y_clh[c, l, h] * VCL_c[c] + x_crh[c, r, h] * VCR_c[c] for l in EstacionesLenta for r in EstacionesRapida) - G_c[c] * d_ch[c, h] for h in range(1, h)) / B_c[c]) for h in range(2, 24) for c in Camiones)
 
-	r12_2 = (h_ch[c, 1] == BI_c[c] * B_c[c] for c in Camiones )
+	r12_2 = (h_ch[c, h] <= B_c[c] for c in Camiones for h in Horas)
 
 	r12_3 = (h_ch[c, 24] >= 50 for c in Camiones)
 
 	r13 = (h_ch[c, h] >= t_ch[c, h] * HR_c[c] for c in Camiones for h in Horas)
 
+	r14 = ()
+
 	r_mine = {'r1.1': r1_1, 'r1.2': r1_2, 'r2': r2, 'r3.1': r3_1, 'r3.2': r3_2, 'r4': r4, 
 						'r7.1': r7_1, 'r7.2': r7_2, 'r5.1': r5_1, 'r5.2': r5_2, 'r8': r8,
-						'r9': r9, 'r10': r10, 'r11': r11, 'r12': r12, 'r12.3': r12_3, 'r13': r13}
+						'r9': r9, 'r10': r10, 'r11': r11, 'r12': r12, 'r12.2': r12_2, 'r12.3': r12_3, 'r13': r13}
 
 	# Create restrictions
 	r = create_restrictions_dict(y_clh, x_crh, u_lh, v_rh, ex_c)
@@ -96,9 +98,9 @@ def run_model():
 		model.addConstrs(r_mine[i], name = i)
 
 	# Create & add objective function
-	objective = quicksum((y_clh[c, l, h] * (COEL + CCD + CEL) + x_crh[c, r, h] * (COER + CCD + CER) 
-								+ ex_c[c] * CE) for l in EstacionesLenta 
-								for r in EstacionesRapida for c in Camiones for h in Horas)
+	objective = quicksum((y_clh[c, l, h] * (CO * VCL_c[c] + CEL) + x_crh[c, r, h] * (CO * VCR_c[c] + CER) 
+                                + ex_c[c] * CE + d_ch[c, h]* CC) for l in EstacionesLenta 
+                                for r in EstacionesRapida for c in Camiones for h in Horas)
 	model.setObjective(objective, GRB.MINIMIZE)
 
 	# Optimize
